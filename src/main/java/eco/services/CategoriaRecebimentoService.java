@@ -1,5 +1,6 @@
 package eco.services;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import eco.classes.TransferenciaSaldo;
 import eco.entidades.CategoriaRecebimento;
 import eco.entidades.HistoricoCatRecebimento;
 import eco.entidades.Usuario;
@@ -212,6 +214,74 @@ public class CategoriaRecebimentoService {
 				throw new Exception("não foi possível encontrar o usuário logado");
 			}
 			return user.getNome();
+		}
+		
+		
+		
+		
+        // transferencia de saldo  
+		@Transactional
+		public Response<String> transferencia(TransferenciaSaldo ts) {
+			Response<String> response = new Response<String>();
+			try {
+				
+				if (ts.getIdCatRecebProvedor() == ts.getIdCatRecebReceptor()) {
+					throw new Exception("não foi possível transferir porque as categorias são iguais.");
+				}
+				
+				
+				
+				/*
+				 *  OBS: (O nome da entidade de CategoriaRecebimento não é um nome adequado, porém o cliente insistiu que seja assim
+				 *  para seu próprio entendimento)
+				 * 
+				 *  LÓGICA
+				 *  1- buscar categoria provedora
+				 *  2- buscar categoria receptora
+				 *  3- verificar se a categoria receptora contem saldo suficiente para transferencia
+				 *  4- creditar o saldo na categoria receptora
+				 *  5- adicionar o novo saldo a categoria provedora
+				 *  6- salvar categorias de recebimentos e retornar ok para o controller
+				 */
+				
+				// 1
+				CategoriaRecebimento ctrProvedora = repo.findById(ts.getIdCatRecebProvedor())
+						                             .orElseThrow(() -> new Exception(
+						                            		 String.format("não possível encontrar uma categoria com o id %s.", ts.getIdCatRecebProvedor())));
+				// 2
+				CategoriaRecebimento ctrReceptora = repo.findById(ts.getIdCatRecebReceptor())
+                                                     .orElseThrow(() -> new Exception(
+                       		                                 String.format("não possível encontrar uma categoria com o id %s.", ts.getIdCatRecebReceptor())));
+				
+				Double saldoAtualProvedora = ctrProvedora.getTotalReceita().doubleValue();
+				Double novoSaldoProvedora = saldoAtualProvedora - ts.getValor();
+				
+				// 3
+				if (novoSaldoProvedora < 0) {
+					throw new Exception("saldo insuficiente para transferência.");
+				}
+				
+				// 4
+				Double saldoAtualCatReceptora = ctrReceptora.getTotalReceita().doubleValue();
+				Double novoSaldoCatReceptora = saldoAtualCatReceptora + ts.getValor();
+				ctrReceptora.setTotalReceita(new BigDecimal(novoSaldoCatReceptora));
+				
+				// 5 
+				ctrProvedora.setTotalReceita(new BigDecimal(novoSaldoProvedora));
+				
+				
+				
+				// 6
+				repo.save(ctrProvedora);
+				repo.save(ctrReceptora);
+				response.setDados("ok");
+				return response;
+				
+				
+			} catch (Exception e) {
+				response.getErros().add("Ocorreu o seguinte erro ao tentar fazer a transferncia: "+ e.getMessage());
+				return response;
+			}
 		}
 
 		

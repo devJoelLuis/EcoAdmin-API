@@ -20,6 +20,11 @@ import lombok.Data;
 @Entity
 @Table(name="categoria_recebimento")
 @Data
+/* 
+ * OBS: (O nome da entidade de CategoriaRecebimento não é um nome adequado, 
+ * porém o cliente insistiu que seja assim  para seu próprio entendimento)
+ */
+	
 public class CategoriaRecebimento {
 	
 	@Id

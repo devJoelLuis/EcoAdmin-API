@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import eco.classes.TransferenciaSaldo;
 import eco.entidades.CategoriaRecebimento;
 import eco.entidades.HistoricoCatRecebimento;
 import eco.response.Response;
@@ -117,6 +118,7 @@ public class CategoriaRecebimentoController {
 	
 	
 	
+	
 	//get historico
 	@GetMapping("/historico")	
 	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
@@ -127,6 +129,20 @@ public class CategoriaRecebimentoController {
 			) {
 		Response<Page<HistoricoCatRecebimento>> response = service.getAllHistorico(page, size, id);
 		
+		if(response.getErros().size() > 0) {
+			return ResponseEntity.badRequest().body(response);
+		}
+		return ResponseEntity.ok(response);
+	}
+	
+	
+	
+	@PostMapping("/transferencia")
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+	public ResponseEntity<?> transferencia(
+	 @RequestBody TransferenciaSaldo ts		
+			) {
+		Response<String> response = service.transferencia(ts);
 		if(response.getErros().size() > 0) {
 			return ResponseEntity.badRequest().body(response);
 		}
