@@ -10,5 +10,6 @@ public class TotaisCalculados {
 	private Double totalReceber = 0.00;
 	private Double totalRecebido = 0.00;
 	private Double totalPendencia = 0.00;
+	private Double totalLancado = 0.00;
 
 }

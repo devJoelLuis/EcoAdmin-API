@@ -11,6 +11,7 @@ public class OsFiltroDTO {
 	private boolean pendente = false;
 	private Double pendenciaFinanceira = 0.00;
 	private Double total = 0.00;
+	private Double totalLancado = 0.00;
 	private Double totalPago = 0.00;
 	private String status;
 	private int numOs;

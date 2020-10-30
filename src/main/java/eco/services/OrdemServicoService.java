@@ -443,6 +443,7 @@ public class OrdemServicoService {
 				dto.setNumOs(os.getNumOs());
 				dto.setStatusCor(os.getStatusOs().getCor());
 				TotaisCalculados tc = getCalcularTotais(os.getId());
+				dto.setTotalLancado(tc.getTotalLancado());
 				dto.setTotal(tc.getTotalReceber() - tc.getTotalRecebido());
 				dto.setTotalPago(tc.getTotalRecebido());
 				dto.setPendenciaFinanceira(tc.getTotalPendencia());			
@@ -461,6 +462,8 @@ public class OrdemServicoService {
 			LocalDate now = LocalDate.now();
 			TotaisCalculados tc = new TotaisCalculados();
 			for (Lancamento l: ls) {
+				if (l.getTotal() != null)
+				tc.setTotalLancado(tc.getTotalLancado() + l.getTotal());
 				if (l.isPago()) continue;
 					Double recebido = 0.00;
 					tc.setTotalReceber( tc.getTotalReceber() + l.getTotal());
